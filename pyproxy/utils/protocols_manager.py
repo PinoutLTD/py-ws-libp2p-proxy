@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import typing as tp
 
 
 @dataclass
 class ProtocolsManager:
-    protocols: tp.Dict[str, tp.Callable] = {}
+    protocols: tp.Dict[str, tp.Callable] = field(default_factory=dict)
 
     def add_protocol(self, protocol, callback):
         self.protocols[protocol] = callback

@@ -63,10 +63,10 @@ class WebsocketClient:
             if self.peer_id_callback is not None:
                 self.peer_id_callback(message["peerId"])
                 return
-        if message.get("protocol") in self.callbacks:
+        if message.get("protocol") in self.protocols_manager.protocols:
             protocol = message.get("protocol")
             formated_msg = format_msg_from_libp2p(message)
-            self.callbacks[protocol](formated_msg)
+            self.protocols_manager.protocols[protocol](formated_msg)
 
     async def _reconnect(self) -> None:
         logger.debug(f"Reconnecting...")
@@ -76,5 +76,5 @@ class WebsocketClient:
             await asyncio.sleep(0.1)
             if not self.is_listening:
                 return
-        logger.debug(f"Callbacks to resubscribe: {self.callbacks}")
-        self.send_msg_to_subscribe()
+        logger.debug(f"Callbacks to resubscribe: {self.protocols_manager.protocols}")
+        await self.send_msg_to_subscribe(self.protocols_manager.protocols)

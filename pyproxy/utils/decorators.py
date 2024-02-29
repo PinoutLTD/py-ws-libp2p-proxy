@@ -19,6 +19,8 @@ def set_websocket(func):
         if ws_client_instance.websocket is None:
             async with websockets.connect(ws_client_instance.proxy_server_url, ping_timeout=None) as websocket:
                 ws_client_instance.websocket = websocket
+                res = await func(ws_client_instance, *args, **kwargs)
+                return res
         res = await func(ws_client_instance, *args, **kwargs)
         return res
 
