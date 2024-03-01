@@ -2,7 +2,7 @@ import asyncio
 import typing as tp
 from .utils.websocket import WebsocketClient
 from .utils.message import format_msg_to_libp2p
-from .utils.protocols_manager import ProtocolsManager
+from .utils.protocols_manager import ProtocolsManager, Callback, CallbackTypes
 
 
 class Libp2pProxyAPI:
@@ -10,9 +10,17 @@ class Libp2pProxyAPI:
         self.protocols_manager = ProtocolsManager()
         self.ws_client = WebsocketClient(self.protocols_manager, proxy_server_url, peer_id_callback)
 
-    async def subscribe_to_protocol(self, protocol: str, callback: tp.Callable) -> None:
+    async def subscribe_to_protocol_sync(self, protocol: str, callback: tp.Callable) -> None:
         asyncio.ensure_future(self.ws_client.set_listener())
-        self.protocols_manager.add_protocol(protocol, callback)
+        callback_obj = Callback(callback, CallbackTypes.SyncType)
+        self.protocols_manager.add_protocol(protocol, callback_obj)
+        protocols = self.protocols_manager.get_protocols()
+        await self.ws_client.send_msg_to_subscribe(protocols)
+
+    async def subscribe_to_protocol_async(self, protocol: str, callback: tp.Callable) -> None:
+        asyncio.ensure_future(self.ws_client.set_listener())
+        callback_obj = Callback(callback, CallbackTypes.AsyncType)
+        self.protocols_manager.add_protocol(protocol, callback_obj)
         protocols = self.protocols_manager.get_protocols()
         await self.ws_client.send_msg_to_subscribe(protocols)
 

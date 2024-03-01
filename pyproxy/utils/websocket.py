@@ -5,7 +5,7 @@ import json
 from .logger import logger
 from .message import format_msg_from_libp2p, format_msg_for_subscribing
 from .decorators import set_websocket
-from .protocols_manager import ProtocolsManager
+from .protocols_manager import ProtocolsManager, CallbackTypes
 
 
 class WebsocketClient:
@@ -66,7 +66,12 @@ class WebsocketClient:
         if message.get("protocol") in self.protocols_manager.protocols:
             protocol = message.get("protocol")
             formated_msg = format_msg_from_libp2p(message)
-            self.protocols_manager.protocols[protocol](formated_msg)
+            callback_obj = self.protocols_manager.protocols[protocol]
+            callback_type = callback_obj.callback_type
+            if callback_type == CallbackTypes.AsyncType:
+                await callback_obj.callback_function(formated_msg)
+            else:
+                callback_obj.callback_function(formated_msg)
 
     async def _reconnect(self) -> None:
         logger.debug(f"Reconnecting...")
@@ -76,5 +81,6 @@ class WebsocketClient:
             await asyncio.sleep(0.1)
             if not self.is_listening:
                 return
-        logger.debug(f"Callbacks to resubscribe: {self.protocols_manager.protocols}")
-        await self.send_msg_to_subscribe(self.protocols_manager.protocols)
+        protocols = self.protocols_manager.get_protocols()
+        logger.debug(f"Callbacks to resubscribe: {protocols}")
+        await self.send_msg_to_subscribe(protocols)
