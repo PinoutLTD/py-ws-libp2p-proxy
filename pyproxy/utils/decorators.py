@@ -21,9 +21,9 @@ def set_websocket(func):
         if ws_client_instance.websocket is not None:
             return await func(ws_client_instance, *args, **kwargs)
 
-        protocols = ws_client_instance.protocols_manager.get_protocols()
         connected = await _connect(ws_client_instance, kwargs.get("reconnect", False))
         if connected:
+            protocols = ws_client_instance.protocols_manager.get_protocols()
             await ws_client_instance.send_msg_to_subscribe(protocols)
             return await func(ws_client_instance, *args, **kwargs)
 
