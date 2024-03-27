@@ -5,7 +5,7 @@ API for the [proxy](https://github.com/PinoutLTD/libp2p-ws-proxy)
 ## Installation
 
 ```
-pip install py-libp2p-proxy
+pip install py-ws-libp2p-proxy
 ```
 
 ## Usage
