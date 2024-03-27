@@ -2,7 +2,7 @@ import copy
 import json
 
 
-def format_msg_from_libp2p(message: str) -> dict:
+def format_msg_from_libp2p(message: dict) -> dict:
     protocol = message.get("protocol")
     message_copy = copy.deepcopy(message)
     message_copy.pop("protocol", None)

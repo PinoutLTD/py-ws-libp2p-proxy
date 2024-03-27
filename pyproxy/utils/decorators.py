@@ -1,5 +1,7 @@
+import asyncio
 from functools import wraps
 import websockets
+from .logger import logger
 
 
 def set_websocket(func):
@@ -16,10 +18,42 @@ def set_websocket(func):
         :param args: Wrapped function args.
         :param kwargs: Wrapped function kwargs
         """
-        if ws_client_instance.websocket is None:
-            async with websockets.connect(ws_client_instance.proxy_server_url, ping_timeout=None) as websocket:
-                ws_client_instance.websocket = websocket
-        res = await func(ws_client_instance, *args, **kwargs)
-        return res
+        if ws_client_instance.websocket is not None:
+            return await func(ws_client_instance, *args, **kwargs)
+
+        connected = await _connect(ws_client_instance, kwargs.get("reconnect", False))
+        if connected:
+            protocols = ws_client_instance.protocols_manager.get_protocols()
+            await ws_client_instance.send_msg_to_subscribe(protocols)
+            return await func(ws_client_instance, *args, **kwargs)
+
+    async def _connect(ws_client_instance, reconnect: bool) -> bool:
+        if not ws_client_instance.is_connecting or reconnect:
+            if ws_client_instance.websocket is None:
+                ws_client_instance.is_connecting = True
+                if reconnect:
+                    await _reconnecting(ws_client_instance)
+                else:
+                    await _connect_once(ws_client_instance)
+                ws_client_instance.is_connecting = False
+        return ws_client_instance.websocket is not None
+
+    async def _reconnecting(ws_client_instance) -> None:
+        while ws_client_instance.websocket is None:
+            try:
+                ws_client_instance.websocket = await websockets.connect(
+                    ws_client_instance.proxy_server_url, ping_timeout=None
+                )
+            except Exception as e:
+                logger.debug(f"Websocket connection exception in decorator: {e}, reconnecting...")
+                await asyncio.sleep(5)
+
+    async def _connect_once(ws_client_instance) -> None:
+        try:
+            ws_client_instance.websocket = await websockets.connect(
+                ws_client_instance.proxy_server_url, ping_timeout=None
+            )
+        except Exception as e:
+            logger.debug(f"Websocket connection exception in decorator: {e}, will not reconnect")
 
     return wrapper

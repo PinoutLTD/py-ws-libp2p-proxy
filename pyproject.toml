@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "py-ws-libp2p-proxy"
+version = "0.1.0"
+description = "API for libp2p-ws-proxy"
+authors = [
+    "Mariia Livshits <m.bystramovich@gmail.com>",
+]
+license = "Apache-2.0"
+
+repository = "https://github.com/tubleronchik/py-libp2p-proxy"
+
+readme = "README.md"
+
+packages = [
+    { include = "pyproxy" },
+]
+exclude = [
+    ".gitignore",
+    ]
+
+[tool.poetry.dependencies]
+python = ">=3.9, <4.0"
+websockets = "^9.1"
+
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
