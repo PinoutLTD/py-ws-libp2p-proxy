@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-ws-libp2p-proxy"
-version = "0.1.0"
+version = "0.1.1"
 description = "API for libp2p-ws-proxy"
 authors = [
     "Mariia Livshits <m.bystramovich@gmail.com>",
@@ -20,7 +20,7 @@ exclude = [
 
 [tool.poetry.dependencies]
 python = ">=3.9, <4.0"
-websockets = "^9.1"
+websockets = "^12.0"
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
