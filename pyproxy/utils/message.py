@@ -16,7 +16,7 @@ def format_msg_to_libp2p(data: str, protocol: str, server_peer_id: str, save_dat
             "save_data": save_data,
             "data": {"data": json_obj},
         }
-    except Exception as e:
+    except json.decoder.JSONDecodeError:
         message = {"protocol": protocol, "serverPeerId": server_peer_id, "save_data": save_data, "data": {"data": data}}
     return json.dumps(message)
 
