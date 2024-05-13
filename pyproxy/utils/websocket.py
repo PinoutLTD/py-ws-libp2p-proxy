@@ -3,7 +3,7 @@ import websockets
 import typing as tp
 import json
 from .logger import logger
-from .message import format_msg_from_libp2p, format_msg_for_subscribing
+from .message import format_msg_from_libp2p, format_msg_for_subscribing, InitialMessage
 from .decorators import set_websocket
 from .protocols_manager import ProtocolsManager, CallbackTypes
 
@@ -63,7 +63,7 @@ class WebsocketClient:
         message = json.loads(message)
         if "peerId" in message:
             if self.peer_id_callback is not None:
-                self.peer_id_callback(message["peerId"])
+                self.peer_id_callback(InitialMessage(message))
                 return
         if message.get("protocol") in self.protocols_manager.protocols:
             protocol = message.get("protocol")

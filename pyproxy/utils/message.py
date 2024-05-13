@@ -24,3 +24,11 @@ def format_msg_to_libp2p(data: str, protocol: str, server_peer_id: str, save_dat
 def format_msg_for_subscribing(protocols: list) -> str:
     msg = {"protocols_to_listen": protocols}
     return json.dumps(msg)
+
+class InitialMessage:
+    def __init__(self, msg: str):
+        self._parse_msg(msg)
+
+    def _parse_msg(self, msg):
+        self.peer_id = msg["peerId"]
+        self.multi_addressess = msg["multiAddresses"]
