@@ -31,7 +31,7 @@ class WebsocketClient:
 
         except websockets.exceptions.ConnectionClosedOK:
             self.is_listening = False
-            logger.debug(f"Websockets connection closed")
+            logger.debug("Websockets connection closed")
 
         except Exception as e:
             self.is_listening = False
@@ -76,7 +76,7 @@ class WebsocketClient:
                 callback_obj.callback_function(formated_msg)
 
     async def _reconnect(self, reconnect: bool) -> None:
-        logger.debug(f"Reconnecting...")
+        logger.debug("Reconnecting...")
         self.websocket = None
         asyncio.ensure_future(self.set_listener(reconnect=reconnect))
         while self.websocket is None:

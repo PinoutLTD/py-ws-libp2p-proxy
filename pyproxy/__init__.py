@@ -1,4 +1,3 @@
-import asyncio
 import typing as tp
 from .utils.websocket import WebsocketClient
 from .utils.message import format_msg_to_libp2p
@@ -24,8 +23,7 @@ class Libp2pProxyAPI:
         :param callback: Callback function for the messages from the protocol.
         :param reconnect: True if needs to reconnect to the proxy server in case of failure.
         """
-
-        asyncio.ensure_future(self.ws_client.set_listener(reconnect=reconnect))
+        await self.ws_client.set_listener(reconnect=reconnect)
         callback_obj = Callback(callback, CallbackTypes.SyncType)
         self.protocols_manager.add_protocol(protocol, callback_obj)
         protocols = self.protocols_manager.get_protocols()
@@ -39,7 +37,7 @@ class Libp2pProxyAPI:
         :param reconnect: True if needs to reconnect to the proxy server in case of failure.
         """
 
-        asyncio.ensure_future(self.ws_client.set_listener(reconnect=reconnect))
+        await self.ws_client.set_listener(reconnect=reconnect)
         callback_obj = Callback(callback, CallbackTypes.AsyncType)
         self.protocols_manager.add_protocol(protocol, callback_obj)
         protocols = self.protocols_manager.get_protocols()

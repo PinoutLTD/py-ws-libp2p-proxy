@@ -19,13 +19,16 @@ def set_websocket(func):
         :param kwargs: Wrapped function kwargs
         """
         if ws_client_instance.websocket is not None:
-            return await func(ws_client_instance, *args, **kwargs)
+            loop = asyncio.get_event_loop()
+            loop.create_task(func(ws_client_instance, *args, **kwargs))
+            return
 
         connected = await _connect(ws_client_instance, kwargs.get("reconnect", False))
         if connected:
             protocols = ws_client_instance.protocols_manager.get_protocols()
             await ws_client_instance.send_msg_to_subscribe(protocols)
-            return await func(ws_client_instance, *args, **kwargs)
+            loop = asyncio.get_event_loop()
+            loop.create_task(func(ws_client_instance, *args, **kwargs))
 
     async def _connect(ws_client_instance, reconnect: bool) -> bool:
         if not ws_client_instance.is_connecting or reconnect:
