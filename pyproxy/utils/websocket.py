@@ -50,6 +50,7 @@ class WebsocketClient:
         await self.send_msg(msg, reconnect=False)
 
     async def close_connection(self) -> None:
+        await asyncio.sleep(0)
         if self.websocket is not None:
             await self.websocket.close()
 
@@ -78,7 +79,7 @@ class WebsocketClient:
     async def _reconnect(self, reconnect: bool) -> None:
         logger.debug("Reconnecting...")
         self.websocket = None
-        asyncio.ensure_future(self.set_listener(reconnect=reconnect))
+        await self.set_listener(reconnect=reconnect)
         while self.websocket is None:
             await asyncio.sleep(0.1)
             if not self.is_listening:
