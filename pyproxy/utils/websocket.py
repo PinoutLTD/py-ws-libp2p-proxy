@@ -40,19 +40,27 @@ class WebsocketClient:
                 await asyncio.sleep(5)
                 await self._reconnect(reconnect)
 
-    @set_websocket
     async def send_msg(self, msg: str, reconnect: bool = False) -> None:
-        await self.websocket.send(msg)
+        await self._send_msg(msg, reconnect=reconnect)
+        if not self.is_listening:
+            await self.close_connection()
 
     async def send_msg_to_subscribe(self, protocols: list) -> None:
         logger.debug(f"Subscribing to: {protocols}")
         msg = format_msg_for_subscribing(protocols)
-        await self.send_msg(msg, reconnect=False)
+        await self._send_msg(msg, reconnect=False)
 
     async def close_connection(self) -> None:
         await asyncio.sleep(0)
+        logger.debug("Close websocket connection")
         if self.websocket is not None:
             await self.websocket.close()
+            self.websocket = None
+            logger.debug("Websocket connection closed")
+
+    @set_websocket
+    async def _send_msg(self, msg: str, reconnect: bool = False) -> None:
+        await self.websocket.send(msg)
 
     async def _consumer_handler(self) -> None:
         while True:
