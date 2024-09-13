@@ -21,28 +21,18 @@ class WebsocketClient:
 
     @set_websocket
     async def set_listener(self, reconnect: bool = False) -> None:
-        try:
-            logger.debug(f"Is listening: {self.is_listening}")
-            if self.is_listening:
-                return
-            self.is_listening = True
-            logger.debug(f"Connected to WebSocket server at {self.proxy_server_url}")
-            await self._consumer_handler()
-
-        except websockets.exceptions.ConnectionClosedOK:
-            self.is_listening = False
-            logger.debug("Websockets connection closed")
-
-        except Exception as e:
-            self.is_listening = False
-            logger.error(f"Websocket exception: {e}")
-            if reconnect:
-                await asyncio.sleep(5)
-                await self._reconnect(reconnect)
+        logger.debug(f"Is listening: {self.is_listening}")
+        if self.is_listening:
+            return
+        self.is_listening = True
+        logger.debug(f"Connected to WebSocket server at {self.proxy_server_url}")
+        loop = asyncio.get_event_loop()
+        loop.create_task(self._consumer_handler(reconnect))
 
     async def send_msg(self, msg: str, reconnect: bool = False) -> None:
         await self._send_msg(msg, reconnect=reconnect)
         if not self.is_listening:
+            logger.debug("Close connection after sending message")
             await self.close_connection()
 
     async def send_msg_to_subscribe(self, protocols: list) -> None:
@@ -62,11 +52,28 @@ class WebsocketClient:
     async def _send_msg(self, msg: str, reconnect: bool = False) -> None:
         await self.websocket.send(msg)
 
-    async def _consumer_handler(self) -> None:
-        while True:
-            message = await self.websocket.recv()
-            logger.debug(f"Received message from server: {message}")
-            await self._consumer(message)
+    async def _consumer_handler(self, reconnect: bool) -> None:
+        try:
+            while True:
+                if self.websocket is not None:
+                    message = await self.websocket.recv()
+                    logger.debug(f"Received message from server: {message}")
+                    await self._consumer(message)
+                else:
+                    self.is_listening = False
+                    logger.debug("Stop listening websocket on None object")
+                    return
+
+        except websockets.exceptions.ConnectionClosedOK:
+            self.is_listening = False
+            logger.debug("Stop listening websocket on ConnectionClosedOK")
+
+        except Exception as e:
+            self.is_listening = False
+            logger.error(f"Websocket exception: {e}")
+            if reconnect:
+                await asyncio.sleep(5)
+                await self._reconnect(reconnect)
 
     async def _consumer(self, message: str) -> None:
         message = json.loads(message)
