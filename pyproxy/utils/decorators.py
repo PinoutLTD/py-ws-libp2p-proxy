@@ -46,7 +46,7 @@ def set_websocket(func):
                     ws_client_instance.proxy_server_url, ping_timeout=None
                 )
             except Exception as e:
-                logger.debug(f"Websocket connection exception in decorator: {e}, reconnecting...")
+                logger.warning(f"Websocket connection exception in decorator: {e}, reconnecting...")
                 await asyncio.sleep(5)
 
     async def _connect_once(ws_client_instance) -> None:
@@ -55,6 +55,7 @@ def set_websocket(func):
                 ws_client_instance.proxy_server_url, ping_timeout=None
             )
         except Exception as e:
-            logger.debug(f"Websocket connection exception in decorator: {e}, will not reconnect")
+            logger.error(f"Websocket connection exception in decorator: {e}, will not reconnect")
+            raise e
 
     return wrapper
