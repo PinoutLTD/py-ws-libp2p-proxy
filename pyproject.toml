@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-ws-libp2p-proxy"
-version = "0.3.1"
+version = "0.3.2"
 description = "API for libp2p-ws-proxy"
 authors = [
     "Mariia Livshits <m.bystramovich@gmail.com>",
